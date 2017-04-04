@@ -74,6 +74,8 @@ public class Converter {
         return ByteBuffer.wrap(bytes).getInt();
     }
 
+    public static String byteToString (byte[] bytes) { return new String(bytes);};
+
     public static  double byteToDouble (byte[] bytes) {
         return ByteBuffer.wrap(bytes).getDouble();
     }

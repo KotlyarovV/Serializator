@@ -1,9 +1,12 @@
 package com.company;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.awt.datatransfer.SystemFlavorMap;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.*;
+import java.io.*;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 
@@ -25,6 +28,13 @@ public class Main {
         } catch (IOException e) {}
     }
 
+
+    public static byte[] getBytesFromFile () throws IOException{
+        Path path = Paths.get("myfile.bin");
+        byte[] data = Files.readAllBytes(path);
+        return data;
+    }
+
     public static void main(String[] args) throws IllegalAccessException, IOException {
 	// write your code here
         Converter.makeCodes();
@@ -32,10 +42,29 @@ public class Main {
         byte[] ser = serialaize(testClass);
         byte[] bytes = doubleToByte(6.87);
         double d = byteToDouble(bytes);
-        System.out.println(d);
+        System.out.println(ser.length);
         write(ser);
+        System.out.println(getBytesFromFile().length);
+
     }
 
+    public static <T extends Object> T deserialize (byte[] bytes)
+            throws ClassNotFoundException, NoSuchMethodException,
+            IllegalAccessException, InstantiationException, InvocationTargetException {
+
+        if (bytes.length == 2) return null;
+
+        byte[] classBytes = Arrays.copyOfRange(bytes, 1, bytes.length - 1);
+        byte[] nameLengthBytes = Arrays.copyOfRange(classBytes, 0, 4);
+        int nameLength = Converter.byteToInt(nameLengthBytes);
+
+        byte[] nameBytes = Arrays.copyOfRange(classBytes, 4, 4 + nameLength);
+        String className = Converter.byteToString(nameBytes);
+        Object object = Class.forName(className).getConstructor().newInstance();
+        
+
+        return (T) object;
+    }
 
     public static <T extends  Object> byte[] serialaize  (T   object ) throws IllegalAccessException, IOException
     {
