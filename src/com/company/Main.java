@@ -9,11 +9,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-
-
-import static com.company.Converter.byteToDouble;
-import static com.company.Converter.doubleToByte;
-import static com.company.Converter.toByte;
+import static com.company.Converter.*;
 
 
 public class Main {
@@ -35,7 +31,11 @@ public class Main {
         return data;
     }
 
-    public static void main(String[] args) throws IllegalAccessException, IOException {
+    public static void main(String[] args) throws IllegalAccessException, IOException,
+            ClassNotFoundException, NoSuchMethodException,
+            IllegalAccessException, InstantiationException,
+            InvocationTargetException, NoSuchFieldException,
+            UnsupportedEncodingException {
 	// write your code here
         Converter.makeCodes();
         TestClass testClass = new TestClass();
@@ -45,12 +45,14 @@ public class Main {
         System.out.println(ser.length);
         write(ser);
         System.out.println(getBytesFromFile().length);
-
+        TestClass a = deserialize(ser);
     }
 
     public static <T extends Object> T deserialize (byte[] bytes)
             throws ClassNotFoundException, NoSuchMethodException,
-            IllegalAccessException, InstantiationException, InvocationTargetException {
+            IllegalAccessException, InstantiationException,
+            InvocationTargetException, NoSuchFieldException,
+            UnsupportedEncodingException {
 
         if (bytes.length == 2) return null;
 
@@ -60,8 +62,96 @@ public class Main {
 
         byte[] nameBytes = Arrays.copyOfRange(classBytes, 4, 4 + nameLength);
         String className = Converter.byteToString(nameBytes);
-        Object object = Class.forName(className).getConstructor().newInstance();
-        
+        Class classObj = Class.forName(className);
+        Object object = classObj.getConstructor().newInstance();
+
+        int i = 4 + nameLength;
+
+        while (i < classBytes.length) {
+
+            byte[] codeFieldBytes = Arrays.copyOfRange(classBytes, i, i+ 4);
+            int codeField = Converter.byteToInt(codeFieldBytes);
+            i = i + 4;
+
+            byte[] nameFieldLengthBytes = Arrays.copyOfRange(classBytes, i, i + 4);
+            int nameFieldLength = Converter.byteToInt(nameFieldLengthBytes);
+            i = i + 4 ;
+
+            byte[] nameFieldBytes = Arrays.copyOfRange(classBytes, i , i + nameFieldLength);
+            String nameField = Converter.byteToString(codeFieldBytes);
+
+            if (codeField < 9) {
+                //получаем размер поля в байтах из его кода
+                int sizeField = Converter.lengths.get(codeField);
+                byte[] fieldByte = Arrays.copyOfRange(classBytes, i, i + sizeField);
+                i = i + sizeField;
+
+                Field fieldAbstract = classObj.getField(nameField);
+
+                switch (codeField){
+
+                    case 1:
+                        fieldAbstract.set(object, byteToInt(fieldByte));
+                        break;
+                    case 2:
+                        fieldAbstract.set(object, byteToDouble(fieldByte));
+                        break;
+                    case 3:
+                        fieldAbstract.set(object, Converter.byteToFloat(fieldByte));
+                        break;
+                    case 4:
+                        fieldAbstract.set(object, Converter.byteToChar(fieldByte));
+                        break;
+                    case 5:
+                        fieldAbstract.set(object, Converter.byteToLong(fieldByte));
+                        break;
+                    case 6:
+                        fieldAbstract.set(object, Converter.byteToShort(fieldByte));
+                        break;
+                    case 7:
+                        fieldAbstract.set(object, fieldByte[0]);
+                        break;
+                    case 8:
+                        fieldAbstract.set(object, Converter.byteToBoolean(fieldByte));
+                        break;
+                }
+            } else if (codeField == 9) {
+                byte[] sizeStringBytes = Arrays.copyOfRange(classBytes, i , i + 4);
+                i = i + 4;
+                int sizeString = byteToInt(sizeStringBytes);
+
+                byte[] stringBytes = Arrays.copyOfRange(classBytes, i , i + sizeString);
+                i = i + sizeString;
+                String string = byteToString(stringBytes);
+
+                Field fieldAbstract = classObj.getField(nameField);
+                fieldAbstract.set(object, string);
+            } else {
+
+                byte[] lengthNameOfClassBytes = Arrays.copyOfRange(classBytes, i , i + 4);
+                i = i + 4;
+                int lengthNameOfClass = byteToInt(lengthNameOfClassBytes);
+
+                byte[] nameOfClassBytes = Arrays.copyOfRange(classBytes, i , i + lengthNameOfClass);
+                i = i + lengthNameOfClass;
+
+                int j = i;
+
+                do { j ++; }
+                while ((char) bytes[j] != ')');
+
+                byte[] classBytesIn = Arrays.copyOfRange(classBytes, i , j + 1);
+
+                Field fieldAbstract = classObj.getField(nameField);
+
+                fieldAbstract.set(object, deserialize(classBytesIn));
+
+                i = j + 1;
+            }
+        }
+
+
+
 
         return (T) object;
     }
@@ -72,7 +162,6 @@ public class Main {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.write(new byte[] {(byte)'('});
-        LinkedList<Byte> result = new LinkedList<>();
         Class c =  object.getClass();
 
         //записали длину имени сразу после скобки
@@ -122,6 +211,7 @@ public class Main {
                 out.write(toByte(typeNumber,field.get(object)));
             else if (typeNumber != 9) {
                 //если класс - пишем какой
+                out.write(intToByte(type.length()));
                 out.write(type.getBytes());
                 out.write(serialaize(field.get(object)));
             }

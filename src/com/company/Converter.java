@@ -1,5 +1,6 @@
 package com.company;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
@@ -9,7 +10,7 @@ import java.util.HashMap;
 public class Converter {
 
     public static HashMap<String, Integer> codes = new HashMap<>();
-
+    public static HashMap<Integer, Integer> lengths = new HashMap<>();
 
     public static byte[] toByte (int number, Object value) {
         switch (number) {
@@ -26,6 +27,8 @@ public class Converter {
         return null;
     }
 
+
+
     public static void  makeCodes () {
         codes.put("int",1);//1 int
         codes.put("double",2);//2 double
@@ -36,6 +39,15 @@ public class Converter {
         codes.put("byte",7);//7 byte
         codes.put("bool",8);//8 - bool
         codes.put("java.lang.String",9);//9 -string
+
+        lengths.put(1, 4);
+        lengths.put(2, 8);
+        lengths.put(3, 4);
+        lengths.put(4, 1);
+        lengths.put(5, 8);
+        lengths.put(6, 2);
+        lengths.put(7, 1);
+        lengths.put(8, 4);
     }
 
     public static byte[] doubleToByte(double number) {
@@ -74,11 +86,32 @@ public class Converter {
         return ByteBuffer.wrap(bytes).getInt();
     }
 
-    public static String byteToString (byte[] bytes) { return new String(bytes);};
+    public static String byteToString (byte[] bytes)
+            throws UnsupportedEncodingException
+    { return new String(bytes, "utf-8");};
 
     public static  double byteToDouble (byte[] bytes) {
         return ByteBuffer.wrap(bytes).getDouble();
     }
 
+    public static  float byteToFloat (byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getFloat();
+    }
 
+    public static  char byteToChar (byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getChar();
+    }
+
+    public static  long byteToLong (byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getLong();
+    }
+
+    public static  long byteToShort (byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getShort();
+    }
+
+    public static  boolean byteToBoolean (byte[] bytes) {
+        int a = byteToInt(bytes);
+        return a == 1;
+    }
 }
