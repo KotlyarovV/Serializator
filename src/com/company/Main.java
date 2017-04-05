@@ -78,7 +78,7 @@ public class Main {
             i = i + 4 ;
 
             byte[] nameFieldBytes = Arrays.copyOfRange(classBytes, i , i + nameFieldLength);
-            String nameField = Converter.byteToString(codeFieldBytes);
+            String nameField = Converter.byteToString(nameFieldBytes);
 
             if (codeField < 9) {
                 //получаем размер поля в байтах из его кода
