@@ -27,8 +27,6 @@ public class Converter {
         return null;
     }
 
-
-
     public static void  makeCodes () {
         codes.put("int",1);//1 int
         codes.put("double",2);//2 double
@@ -67,7 +65,6 @@ public class Converter {
 
     public static byte[] intToByte(int number) {
         byte [] bytes = ByteBuffer.allocate(4).putInt(number).array();
-        System.out.println(bytes.length);
         return bytes;
     }
 
@@ -86,9 +83,8 @@ public class Converter {
         return ByteBuffer.wrap(bytes).getInt();
     }
 
-    public static String byteToString (byte[] bytes)
-            throws UnsupportedEncodingException
-    { return new String(bytes, "utf-8");};
+    public static String byteToString (byte[] bytes) throws UnsupportedEncodingException {
+        return new String(bytes, "utf-8");};
 
     public static  double byteToDouble (byte[] bytes) {
         return ByteBuffer.wrap(bytes).getDouble();
@@ -99,7 +95,7 @@ public class Converter {
     }
 
     public static  char byteToChar (byte[] bytes) {
-        return ByteBuffer.wrap(bytes).getChar();
+        return (char) bytes[0];
     }
 
     public static  long byteToLong (byte[] bytes) {
