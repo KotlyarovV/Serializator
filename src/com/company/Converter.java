@@ -9,8 +9,28 @@ import java.util.HashMap;
  */
 public class Converter {
 
-    public static HashMap<String, Integer> codes = new HashMap<>();
-    public static HashMap<Integer, Integer> lengths = new HashMap<>();
+    public static HashMap<String, Integer> codes = new HashMap<String, Integer>() {{
+        put("int",1);//1 int
+        put("double",2);//2 double
+        put("float",3);//3 float
+        put("char",4);//4 char
+        put("long",5);//5 long
+        put("short",6);//6 short
+        put("byte",7);//7 byte
+        put("bool",8);//8 - bool
+        put("java.lang.String",9);//9 -string
+    }};
+
+    public static HashMap<Integer, Integer> lengths = new HashMap<Integer, Integer>() {{
+        put(1, 4);
+        put(2, 8);
+        put(3, 4);
+        put(4, 1);
+        put(5, 8);
+        put(6, 2);
+        put(7, 1);
+        put(8, 4);
+    }};
 
     public static byte[] toByte (int number, Object value) {
         switch (number) {
@@ -27,26 +47,6 @@ public class Converter {
         return null;
     }
 
-    public static void  makeCodes () {
-        codes.put("int",1);//1 int
-        codes.put("double",2);//2 double
-        codes.put("float",3);//3 float
-        codes.put("char",4);//4 char
-        codes.put("long",5);//5 long
-        codes.put("short",6);//6 short
-        codes.put("byte",7);//7 byte
-        codes.put("bool",8);//8 - bool
-        codes.put("java.lang.String",9);//9 -string
-
-        lengths.put(1, 4);
-        lengths.put(2, 8);
-        lengths.put(3, 4);
-        lengths.put(4, 1);
-        lengths.put(5, 8);
-        lengths.put(6, 2);
-        lengths.put(7, 1);
-        lengths.put(8, 4);
-    }
 
     public static byte[] doubleToByte(double number) {
         byte [] bytes = ByteBuffer.allocate(8).putDouble(number).array();

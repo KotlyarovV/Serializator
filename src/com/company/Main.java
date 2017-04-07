@@ -9,8 +9,7 @@ public class Main {
             ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InstantiationException,
             InvocationTargetException, NoSuchFieldException {
-
-        Converter.makeCodes();
+        
         TestClass testClass = new TestClass();
         byte[] ser = Serializator.serialaize(testClass);
         FileWorker.write(ser);
